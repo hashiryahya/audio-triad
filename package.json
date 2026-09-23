@@ -1,0 +1,27 @@
+{
+  "name": "audio-triad",
+  "version": "1.0.0",
+  "description": "Multi-Device Audio Splitter & Movie Sync Windows Application routing synchronized sound across AUX (3.5mm), USB Type-C, and Bluetooth with latency delay compensation.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "electron": "electron electron-main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hashiryahya/audio-triad.git"
+  },
+  "keywords": [
+    "audio-triad",
+    "audio-splitter",
+    "web-audio-api",
+    "multi-device",
+    "bluetooth-sync",
+    "aux",
+    "usb-c",
+    "movie-sync",
+    "windows-application"
+  ],
+  "author": "Hashir Yahya",
+  "license": "MIT"
+}
