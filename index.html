@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioTriad - Triple Headphone Audio Splitter & Movie Sync</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke="#00F2FE" stroke-width="3"/>
+                        <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" fill="#4FACFE"/>
+                        <path d="M6 12a6 6 0 0 1 6-6" stroke="#00F2FE" stroke-width="2"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>Audio<span>Triad</span></h1>
+                    <p class="subtitle">Multi-Device Audio Splitter & Movie Sync</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button id="btnRefreshDevices" class="btn btn-secondary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                    </svg>
+                    Refresh Devices
+                </button>
+                <button id="btnAutoAssign" class="btn btn-accent">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    Auto-Detect & Assign 3 Devices
+                </button>
+            </div>
+        </header>
+
+        <!-- Audio Activation & Setup Notice -->
+        <div id="activationBanner" class="activation-banner glass-panel">
+            <div class="banner-content">
+                <span class="banner-icon">🔊</span>
+                <div>
+                    <h3>Click Anywhere to Activate Audio Engine & Device Routing</h3>
+                    <p>Select your 3 specific headphone devices in the dropdowns below (AUX, USB Type-C, Bluetooth), then test each with the 🔔 Test Tone button.</p>
+                </div>
+            </div>
+            <button id="btnEnableAudio" class="btn btn-accent">Enable Audio Now</button>
+        </div>
+
+        <main class="workspace">
+            <!-- Left Side: Source & Video Player -->
+            <section class="player-section glass-panel">
+                <div class="section-header">
+                    <h2>Source Audio / Video</h2>
+                    <div class="tab-buttons">
+                        <button id="tabMovie" class="tab-btn active">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+                                <line x1="7" y1="2" x2="7" y2="22"/>
+                                <line x1="17" y1="2" x2="17" y2="22"/>
+                                <line x1="2" y1="12" x2="22" y2="12"/>
+                                <line x1="2" y1="7" x2="7" y2="7"/>
+                                <line x1="2" y1="17" x2="7" y2="17"/>
+                                <line x1="17" y1="17" x2="22" y2="17"/>
+                                <line x1="17" y1="7" x2="22" y2="7"/>
+                            </svg>
+                            Movie File Player
+                        </button>
+                        <button id="tabSystem" class="tab-btn">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                <line x1="8" y1="21" x2="16" y2="21"/>
+                                <line x1="12" y1="17" x2="12" y2="21"/>
+                            </svg>
+                            System Audio Mirror (Netflix / Browser)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab 1: Movie Player Container -->
+                <div id="moviePlayerContainer" class="tab-content active">
+                    <div class="video-wrapper" id="dropZone">
+                        <video id="videoElement" crossorigin="anonymous" playsinline></video>
+                        
+                        <div class="drop-overlay" id="dropOverlay">
+                            <div class="upload-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                                </svg>
+                            </div>
+                            <h3>Drag & Drop Movie File Here</h3>
+                            <p>Select your movie file (MP4, MKV, WebM) <strong>or drag both Movie & .SRT Subtitle together!</strong></p>
+                            <input type="file" id="fileInput" accept="video/*,audio/*,.srt,.vtt" multiple hidden>
+                            <button id="btnBrowseFile" class="btn btn-primary">Browse Files</button>
+                        </div>
+
+                    </div>
+
+                    <!-- Custom Video Controls -->
+                    <div class="player-controls">
+                        <button id="btnPlayPause" class="btn-control" title="Play/Pause">
+                            <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            <svg id="iconPause" class="hidden" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        </button>
+
+                        <span id="currentTime" class="time-display">00:00:00</span>
+                        
+                        <div class="seeker-container">
+                            <input type="range" id="seekSlider" min="0" max="100" value="0" step="0.1">
+                            <div class="seek-progress" id="seekProgress"></div>
+                        </div>
+
+                        <span id="durationTime" class="time-display">00:00:00</span>
+
+                        <button id="btnFullscreen" class="btn-control" title="Fullscreen">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Audio Tracks & Subtitles Control Bar -->
+                    <div class="media-tracks-bar">
+                        <!-- Audio Track Selector -->
+                        <div class="track-control-group">
+                            <div class="track-label">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 18V5l12-2v13"/>
+                                    <circle cx="6" cy="18" r="3"/>
+                                    <circle cx="18" cy="16" r="3"/>
+                                </svg>
+                                <span>Audio Track:</span>
+                            </div>
+                            <select id="selectAudioTrack" class="track-select">
+                                <option value="0">Track 1: Main Audio</option>
+                            </select>
+                        </div>
+
+                        <!-- Subtitle Track Selector -->
+                        <div class="track-control-group">
+                            <div class="track-label">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                <span>Subtitles:</span>
+                            </div>
+                            <select id="selectSubtitleTrack" class="track-select">
+                                <option value="off">Subtitles Off</option>
+                            </select>
+                        </div>
+
+                        <!-- Load Subtitle File -->
+                        <div class="track-control-group">
+                            <input type="file" id="subFileInput" accept=".srt,.vtt,.ass" hidden>
+                            <button id="btnLoadSubtitle" class="btn btn-secondary btn-sm" title="Add external subtitle file (.srt / .vtt)">
+                                💬 + Add SRT/VTT Subtitle
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Tab 2: System Audio Mirror Container -->
+                <div id="systemAudioContainer" class="tab-content hidden">
+                    <div class="system-mirror-card">
+                        <div class="system-icon-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                        </div>
+                        <h3>System Audio Capture Mode</h3>
+                        <p>Play movies from <strong>Netflix, YouTube, VLC, Prime Video</strong>, or any browser tab on your laptop, and AudioTriad will stream the audio to all 3 headphones simultaneously.</p>
+                        
+                        <div class="system-action">
+                            <button id="btnStartSystemCapture" class="btn btn-large btn-primary">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polygon points="10 8 16 12 10 16 10 8"/>
+                                </svg>
+                                Start System Audio Capture
+                            </button>
+                            <button id="btnStopSystemCapture" class="btn btn-large btn-danger hidden">
+                                Stop Capture
+                            </button>
+                        </div>
+                        <div id="systemCaptureStatus" class="status-badge inactive">System Capture Off</div>
+                    </div>
+                </div>
+
+                <!-- Live Spectrum Visualizer -->
+                <div class="visualizer-container">
+                    <div class="visualizer-header">
+                        <span>Master Audio Spectrum</span>
+                        <span id="audioStatusText" class="status-text">Audio Engine Ready</span>
+                    </div>
+                    <canvas id="visualizerCanvas"></canvas>
+                </div>
+            </section>
+
+            <!-- Right Side: 3 Output Device Cards -->
+            <section class="devices-section">
+                <div class="section-title-bar">
+                    <h2>Target Audio Devices (3 Outputs)</h2>
+                    <span class="badge-triple">⚡ 3-Channel Active Routing</span>
+                </div>
+
+                <div class="device-cards-grid">
+                    <!-- Device 1: AUX / 3.5mm Wireless -->
+                    <div class="device-card glass-panel" id="cardAux">
+                        <div class="card-header aux-theme">
+                            <div class="device-badge">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                                </svg>
+                                CHANNEL 1: AUX / 3.5mm WIRELESS
+                            </div>
+                            <button class="btn-test-chime" data-channel="0" title="Play test tone on this channel">
+                                🔔 Test Tone
+                            </button>
+                        </div>
+
+                        <div class="device-select-group">
+                            <label for="selectDeviceAux">Audio Output Device:</label>
+                            <select id="selectDeviceAux" class="device-select"></select>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="slider-group">
+                                <div class="slider-label">
+                                    <span>Volume</span>
+                                    <span id="valVolAux">100%</span>
+                                </div>
+                                <input type="range" id="sliderVolAux" min="0" max="150" value="100" class="slider">
+                            </div>
+
+                            <button id="btnMuteAux" class="btn-mute" title="Mute Channel">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="delay-group">
+                            <div class="slider-label">
+                                <span>Sync / Delay Offset</span>
+                                <span id="valDelayAux">0 ms</span>
+                            </div>
+                            <input type="range" id="sliderDelayAux" min="0" max="500" value="0" step="5" class="slider slider-delay">
+                        </div>
+
+                        <div class="vu-meter">
+                            <div id="meterAux" class="vu-fill aux-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Device 2: USB Type-C EarPods -->
+                    <div class="device-card glass-panel" id="cardTypeC">
+                        <div class="card-header typec-theme">
+                            <div class="device-badge">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="6" y="8" width="12" height="8" rx="2"/>
+                                    <path d="M2 12h4M18 12h4"/>
+                                </svg>
+                                CHANNEL 2: USB TYPE-C EARPODS
+                            </div>
+                            <button class="btn-test-chime" data-channel="1" title="Play test tone on this channel">
+                                🔔 Test Tone
+                            </button>
+                        </div>
+
+                        <div class="device-select-group">
+                            <label for="selectDeviceTypeC">Audio Output Device:</label>
+                            <select id="selectDeviceTypeC" class="device-select"></select>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="slider-group">
+                                <div class="slider-label">
+                                    <span>Volume</span>
+                                    <span id="valVolTypeC">100%</span>
+                                </div>
+                                <input type="range" id="sliderVolTypeC" min="0" max="150" value="100" class="slider">
+                            </div>
+
+                            <button id="btnMuteTypeC" class="btn-mute" title="Mute Channel">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="delay-group">
+                            <div class="slider-label">
+                                <span>Sync / Delay Offset</span>
+                                <span id="valDelayTypeC">0 ms</span>
+                            </div>
+                            <input type="range" id="sliderDelayTypeC" min="0" max="500" value="0" step="5" class="slider slider-delay">
+                        </div>
+
+                        <div class="vu-meter">
+                            <div id="meterTypeC" class="vu-fill typec-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Device 3: Bluetooth Headphone -->
+                    <div class="device-card glass-panel" id="cardBT">
+                        <div class="card-header bt-theme">
+                            <div class="device-badge">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/>
+                                </svg>
+                                CHANNEL 3: BLUETOOTH HEADPHONE
+                            </div>
+                            <button class="btn-test-chime" data-channel="2" title="Play test tone on this channel">
+                                🔔 Test Tone
+                            </button>
+                        </div>
+
+                        <div class="device-select-group">
+                            <label for="selectDeviceBT">Audio Output Device:</label>
+                            <select id="selectDeviceBT" class="device-select"></select>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="slider-group">
+                                <div class="slider-label">
+                                    <span>Volume</span>
+                                    <span id="valVolBT">100%</span>
+                                </div>
+                                <input type="range" id="sliderVolBT" min="0" max="150" value="100" class="slider">
+                            </div>
+
+                            <button id="btnMuteBT" class="btn-mute" title="Mute Channel">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="delay-group">
+                            <div class="slider-label">
+                                <span>Sync / Delay Offset</span>
+                                <span id="valDelayBT">0 ms</span>
+                            </div>
+                            <input type="range" id="sliderDelayBT" min="0" max="500" value="0" step="5" class="slider slider-delay">
+                        </div>
+
+                        <div class="vu-meter">
+                            <div id="meterBT" class="vu-fill bt-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Quick Help Bar -->
+        <footer class="app-footer">
+            <div class="footer-info">
+                <span>💡 <strong>Quick Setup Tip:</strong> Plug in your 3 headphones (AUX, USB Type-C, Bluetooth). Click <strong>"Auto-Detect & Assign 3 Devices"</strong> at the top right to start immediate 3-way movie listening!</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
